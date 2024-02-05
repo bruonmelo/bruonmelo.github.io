@@ -1,11 +1,24 @@
 ---
-title: "bruonmelo.github.io"
+title: "Bruno de Souza Melo"
+image: bruonperfil.jpg
+resources: resume.pdf
+about:
+  id: pf-heading
+  template: jolla
+  image-shape: rounded
+  image-width: 15em
+  links: 
+    - text: email
+      icon: envelope
+      href: mailto:bruno.melo@ufu.br
+    - text: github
+      icon: github
+      href: https://github.com/bruonmelo
 ---
 
-This is a Quarto website.
+::: {#pf-heading}
+Olá! Me chamo Bruno e sou formando do curso de Estatística na Universidade Federal de Uberlândia - UFU.
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+Meu interesse por Estatística e áreas correlacionadas provêm da possibilidade de gerar impacto (positivo) na vida das pessoas por meio de análises e modelos estatísticos. Um grande exemplo é a importância da Estatística para a Administração Pública no Brasil, influenciando todos os dias a vida de milhares de pessoas por meio de políticas públicas.
 
-```{r}
-1 + 1
-```
+:::

@@ -3,16 +3,19 @@ project:
   output-dir: docs
 
 website:
-  title: "bruonmelo.github.io"
+  title: "Bruon"
   navbar:
+    background: dark
     left:
       - href: index.qmd
         text: Home
       - about.qmd
+      - searches.qmd
 
 format:
   html:
     theme: cosmo
+    lang: pt
     css: styles.css
     toc: true
 

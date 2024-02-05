@@ -1,0 +1,6 @@
+---
+title: "Estudo em Segurança Pública"
+image: sejusp_logo.png
+description: "Estudos e análises sobre crimes cometidos no estado de Minas Gerais. Todas as informações analisadas são provenientes dos dados disponibilizados pela Secretaria de Estado de Justiça e Segurança Pública (Sejusp)."
+---
+
