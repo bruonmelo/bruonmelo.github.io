@@ -1,0 +1,236 @@
+---
+title: "Estatísticas de Criminalidad - Uberlândia"
+format: dashboard
+---
+  
+```{r}
+#| label: load-packages
+#| message: false
+
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(scales)
+library(DT)
+library(gt)
+library(stringr)
+theme_set(theme_minimal(base_size = 24, base_family = "Atkinson Hyperlegible"))
+```
+
+```{r}
+#| label: carregando-dados
+#| message: false
+
+dados <- read.csv("dados\\Crimes Violentos.csv", check.names = F, row.names = NULL, sep = ";", fileEncoding = "latin1")
+```
+
+```{r}
+#| label: filtrando-cidade
+
+dados <- dados[dados$Município == "UBERLANDIA",]
+```
+
+```{r}
+#| label: criando-ano-mes
+
+ano_mes <- c()
+
+for (i in 1:nrow(dados)) {
+  if (dados$`Mês Numérico Fato`[i] < 10){
+    mes <- paste0("0",dados$`Mês Numérico Fato`[i])
+    ano_mes[i] <- paste(dados$`Ano Fato`[i], mes, sep = "-")
+  }else{
+    ano_mes[i] <- paste(dados$`Ano Fato`[i], dados$`Mês Numérico Fato`[i], sep = "-")
+  }
+}
+
+dados$Ano_Mes <- ano_mes
+```
+
+#  {.sidebar}
+
+Esse Dashboard se refere à:
+  
+  |                      |                          |
+  |----------------------|--------------------------|
+  | **Cidade**           | Uberlândia               |
+  | **Atualizado em**    | `{r} max(dados$Ano_Mes)` |
+  
+# Geral
+
+## Row {height="25%"}
+
+```{r}
+#| content: valuebox
+#| title: "Média Roubos por Mês - 2024"
+
+# Média de roubos em 2024 por Mês
+
+roubos2024 <- dados[dados$`Ano Fato` == 2024,]
+
+roubos2024 <- roubos2024[roubos2024$`Natureza Principal Completa` == "ROUBO CONSUMADO" | roubos2024$`Natureza Principal Completa` == "ROUBO TENTADO",]
+
+qtd_mes2024 <- n_distinct(roubos2024$`Mês Fato Resumido`)
+
+list(
+  icon = "emoji-frown",
+  color = "primary",
+  value = sum(roubos2024$`Qtde Ocorrências`)/qtd_mes2024
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Variação Roubos Últimos 3 Meses"
+
+ultimos3meses <- sort(unique(dados$Ano_Mes), decreasing = T)[1:3]
+
+roubos3meses <- dados[dados$Ano_Mes == ultimos3meses,]
+
+roubos3meses <- roubos3meses[roubos3meses$`Natureza Principal Completa` == "ROUBO CONSUMADO" | roubos3meses$`Natureza Principal Completa` == "ROUBO TENTADO",]
+
+mais_antigo <- roubos3meses[roubos3meses$Ano_Mes == ultimos3meses[3],]
+mais_recente <- roubos3meses[roubos3meses$Ano_Mes == ultimos3meses[1],]
+
+list(
+  icon = "clipboard2-pulse",
+  value = ((sum(mais_antigo$`Qtde Ocorrências`) - sum(mais_recente$`Qtde Ocorrências`)) / (sum(mais_antigo$`Qtde Ocorrências`) + sum(mais_recente$`Qtde Ocorrências`)))*100
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Pre-term births"
+
+list(
+  icon = "calendar-week",
+  value = 0
+)
+```
+
+## Row {height="75%"}
+
+### Column {width="40%"}
+```{r}
+#| title: Crimes por Natureza Principal
+
+natureza_crime <- dados[dados$`Ano Fato` == max(dados$`Ano Fato`),]
+
+by_natureza <- natureza_crime %>% group_by(`Natureza Principal Completa`)
+
+tbl_natureza <- by_natureza %>% 
+                summarise(`Qtd Ocorrências` = sum(`Qtde Ocorrências`))
+
+tabela <- 
+  tbl_natureza |>
+  gt(rowname_col = "Natureza Principal Completa") |>
+  tab_stubhead(label = "Natureza do Crime") |>
+  tab_source_note(
+    source_note = "Fonte: Observatório de Segurança Pública/Sejusp"
+  ) |> 
+  tab_row_group(
+    label = "SEQUESTRO",
+    rows = "SEQUESTRO E CARCERE PRIVADO CONSUMADO"
+  ) |>
+  tab_row_group(
+    label = "EXTORSÃO",
+    rows = 4:6
+  ) |>
+  tab_row_group(
+    label = "HOMICÍDIO",
+    rows = 7:8
+  ) |>
+  tab_row_group(
+    label = "ROUBO",
+    rows = c("ROUBO CONSUMADO", "ROUBO TENTADO")
+  ) |>
+  tab_row_group(
+    label = "ESTUPRO",
+    rows = 1:3
+  ) |>
+  tab_style(
+    style = cell_text(color = "#0e2635", weight = "bold"),
+    locations = cells_body(
+      columns = everything(),
+      rows = everything()
+    )
+  ) |>
+  tab_style(
+    style = cell_text(color = "#0e2635", weight = "bold"),
+    locations = cells_row_groups(
+      groups = everything()
+    )
+  ) |>
+  tab_style(
+    style = cell_text(color = "#0e2635"),
+    locations = cells_stub(
+      rows = everything()
+    )
+  )
+
+tabela
+```
+
+### Column {width="60%"}
+
+```{r}
+#| title: Crimes por dia da semana
+#| echo: false
+#| warning: false
+
+## Sumarizando a quantidade de crimes por dia da semana
+crimes_week <- dados[dados$`Ano Fato` == max(dados$`Ano Fato`),]
+
+crimes_week <- crimes_week %>% group_by(`Dia da Semana Fato`) %>% count()
+
+level_order <- c('DOMINGO', 'SEGUNDA-FEIRA', 'TERÇA-FEIRA', 'QUARTA-FEIRA', 'QUINTA-FEIRA', 'SEXTA-FEIRA', 'SÁBADO')
+
+ggplot(data = crimes_week, aes(x = `Dia da Semana Fato`, y = n)) +
+  geom_bar(stat="identity", fill = '#118DFF',width = 0.7 , aes(x = factor(`Dia da Semana Fato`), level = rev(level_order)))+
+  ylab("Quantidade de Crimes")+
+  geom_text(aes(label=n), vjust=-0.3, size=4)+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_blank(),
+        axis.title.x = element_blank(), axis.ticks = element_blank(), axis.text.y = element_blank(), axis.text.x = element_text(size = 8.5, color = "black"), 
+        axis.title.y = element_text(size = 13))
+```
+
+```{r}
+#| title: Crimes por faixa de horário
+#| echo: false
+#| warning: false
+
+## Sumarizando a quantidade de crimes por dia da semana
+crimes_hour <- dados[dados$`Ano Fato` == max(dados$`Ano Fato`),]
+
+crimes_hour$`Faixa 6 Horas Fato` <- gsub("\\s{2,}", "", crimes_hour$`Faixa 6 Horas Fato`)
+
+crimes_hour <- crimes_hour %>% group_by(`Faixa 6 Horas Fato`) %>% count()
+
+ggplot(data = crimes_hour, aes(x = `Faixa 6 Horas Fato`, y = n)) +
+  geom_bar(stat="identity", fill = '#118DFF',width = 0.7 , aes(x = factor(`Faixa 6 Horas Fato`)))+
+  ylab("Quantidade de Crimes")+
+  geom_text(aes(label=n), vjust=-0.3, size=4)+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_blank(),
+        axis.title.x = element_blank(), axis.ticks = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.text.x = element_text(size = 10, color = "black"), 
+        axis.title.y = element_text(size = 13))
+```
+
+# Data
+
+```{r}
+
+dados[,1:8] |>
+  arrange(`Número REDS`) |>
+  datatable(
+    style = "auto",
+    options = list(dom = 'ftp', paging = TRUE),
+    height  = 0.5,
+    width = 0.5
+    )
+
+```

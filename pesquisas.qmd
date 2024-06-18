@@ -1,0 +1,14 @@
+---
+title: "Pesquisas"
+listing: 
+  id: lista-pesquisas
+  contents: searches
+  type: default
+  sort: "title asc"
+  date-format: DD/MM/YYYY
+---
+
+## Lista com as pesquisas desenvolvidas até o momento.
+
+::: {#lista-pesquisas}
+:::

@@ -9,8 +9,12 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - about.qmd
-      - searches.qmd
+      - href: sobre.qmd
+        text: Sobre
+      - href: pesquisas.qmd
+        text: Pesquisas
+      - href: dashboard.qmd
+        text: Dashboard
 
 format:
   html:
